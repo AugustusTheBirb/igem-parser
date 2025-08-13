@@ -13,11 +13,11 @@
 <li>ol item 3</li>
 </ol>
 <p className="py-2 text-base">paragrafasparagrafas paragrafas paragrafasparagrafas paragrafas paragrafas paragrafasparagrafas paragrafas paragrafas paragrafasparagrafas paragrafas paragrafas paragrafasparagrafas paragrafas</p>
-<p className="py-2 text-base">informacija[1]</p>
-<p className="py-2 text-base">informuotas as esu pagal vardeni pavardeni et al[2]</p>
+<p className="py-2 text-base">informacija<ScrollLink to=reference-1 smooth=true duration=500 offset=-100 className="cursor-pointer">[1]</ScrollLink></p>
+<p className="py-2 text-base">informuotas as esu pagal vardeni pavardeni et al<ScrollLink to=reference-2 smooth=true duration=500 offset=-100 className="cursor-pointer">[2]</ScrollLink></p>
 <p className="py-2 text-base">info info <a className="text-blue-500 hover:underline cursor-pointer" href="https://2024.igem.wiki/vilnius-lithuania/engineering/">linkas</a> info info   </p>
 <h2 className="text-4xl font-bold mb-4" id="heading 1">References </h2>
 <ol>
-<li>jonas petrauskas et al</li>
-<li>vardas pavardenis et a</li>
+<li id="reference-1">jonas petrauskas et al</li>
+<li id="reference-2">vardas pavardenis et a</li>
 </ol>

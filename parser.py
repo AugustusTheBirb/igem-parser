@@ -27,6 +27,24 @@ def parseBoldItalic(string):
             newString += string[index]
     return newString        
 
+def parseReferences(string):
+    newString = ""
+    num = ""
+    isNumber = False
+    for i, letter in enumerate(string):
+        if letter == "[":
+            isNumber = True
+            continue
+        if letter == "]":
+            isNumber = False
+            newString+= f"<ScrollLink to={"reference-" + num} smooth={"true"} duration={"500"} offset={"-100"} className=\"cursor-pointer\">[{num}]</ScrollLink>"
+            continue
+        if isNumber:
+            num += letter
+        if not isNumber:
+            newString += letter
+    return newString
+
 def parseLinks(string):
     newString = "" 
     linkT = False
@@ -53,7 +71,9 @@ def parseLinks(string):
             linkText += letter
         if not linkR and not linkT:
             newString += letter
-    return parseBoldItalic(newString)
+    return parseBoldItalic(parseReferences(newString))
+
+
 
 def isOrderedListItem(string):
     idx = 0
@@ -77,6 +97,8 @@ with open("output_jsx.txt", "w") as out:
         ul = False
         ol = False
         lines = f.readlines()
+        ref = False
+        refIdx = 1
         for i, line in enumerate(lines):
             isOlItem, numberLength = isOrderedListItem(line)
 
@@ -84,6 +106,8 @@ with open("output_jsx.txt", "w") as out:
             # Headers
             elif line[0] == "#":
                 if line[0:2] == "# ":
+                    if "References" in line:
+                        ref = True
                     out.write(f"<h2 className=\"text-4xl font-bold mb-4\" id=\"heading {headerIndex}\">{line[2:-1].replace("*","")}</h2>\n")
                     headerIndex += 1
                 elif line[0:3] == "## ":
@@ -104,9 +128,17 @@ with open("output_jsx.txt", "w") as out:
             elif line[0:2] == "1." and not ol:
                 ol = True
                 out.write("<ol>\n")
-                out.write(f"<li>{parseLinks(line[numberLength+2:-1])}</li>\n")
+                addition = ""
+                if ref: 
+                    addition = f" id=\"reference-{refIdx}\""
+                    refIdx += 1
+                out.write(f"<li{addition}>{parseLinks(line[numberLength+2:-1])}</li>\n")
             elif isOlItem and ol:
-                out.write(f"<li>{parseLinks(line[numberLength+2:-1])}</li>\n")
+                addition = ""
+                if ref: 
+                    addition = f" id=\"reference-{refIdx}\""
+                    refIdx += 1
+                out.write(f"<li{addition}>{parseLinks(line[numberLength+2:-1])}</li>\n")
                 if i+1 != len(lines): isOlItem, _ = isOrderedListItem(lines[i+1])
                 if i+1 == len(lines) or not isOlItem:
                     out.write("</ol>\n")

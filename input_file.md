@@ -14,11 +14,9 @@ This is **bold text** and this is *italic text*.
 2. ol item 2
 3. ol item 3
 
-paragrafasparagrafas paragrafas paragrafasparagrafas paragrafas paragrafas paragrafasparagrafas paragrafas paragrafas paragrafasparagrafas paragrafas paragrafas paragrafasparagrafas paragrafas
+iGEM represents the pinnacle of synthetic biology education, fostering incredible innovation among students worldwide. The competition's collaborative spirit, interdisciplinary approach, and emphasis on real-world problem-solving creates an unparalleled learning environment. [1] Watching teams transform ambitious ideas into tangible solutions that address global challenges demonstrates the extraordinary potential of young scientists working together.
 
-informacija[1]
-
-informuotas as esu pagal vardeni pavardeni et al[2]
+tikrai taip butent taip as esu informuotas as esu pagal vardeni pavardeni et al [2]
 
 info info [linkas](https://2024.igem.wiki/vilnius-lithuania/engineering/) info info   
 

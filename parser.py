@@ -37,7 +37,20 @@ def parseReferences(string):
             continue
         if letter == "]":
             isNumber = False
-            newString+= f"<ScrollLink to={"reference-" + num} smooth={"true"} duration={"500"} offset={"-100"} className=\"cursor-pointer\">[{num}]</ScrollLink>"
+            scroll_link = (
+            '<ScrollLink '
+            'to={"reference-'
+            f'{num}'
+            '"} '
+            'smooth={true} '
+            'duration={500} '
+            'offset={-20} '
+            'className="cursor-pointer text-blue-500 hover:underline">'
+            f'[{num}]'
+            '</ScrollLink>'
+            )
+            newString += scroll_link
+            #newString+= f"<ScrollLink to=\"{"reference-" + num}\" smooth=\"{"true"}\" duration=\"{"500"}\" offset=\"{"-100"}\" className=\"cursor-pointer\">[{num}]</ScrollLink>"
             continue
         if isNumber:
             num += letter
@@ -117,7 +130,7 @@ with open("output_jsx.txt", "w") as out:
             # ul
             elif line[0] in "-*" and not ul:
                 ul = True
-                out.write("<ul>\n")
+                out.write("<ul className=\"text-base list-disc pl-12 space-y-2 py-2\">\n")
                 out.write(f"<li>{parseLinks(line[2:-1])}</li>\n")
             elif line[0] in "-*" and ul:
                 out.write(f"<li>{parseLinks(line[2:-1])}</li>\n")
@@ -127,7 +140,7 @@ with open("output_jsx.txt", "w") as out:
             # ol
             elif line[0:2] == "1." and not ol:
                 ol = True
-                out.write("<ol>\n")
+                out.write("<ol className=\"text-base list-decimal pl-12 space-y-2 py-2\">\n")
                 addition = ""
                 if ref: 
                     addition = f" id=\"reference-{refIdx}\""

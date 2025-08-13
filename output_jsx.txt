@@ -2,22 +2,21 @@
 <p className="py-2 text-base">Paragrafas, informacija informacija informacija </p>
 <h3 className="text-2xl font-bold mb-4" id="subheading 0">Subheader</h3>
 <p className="py-2 text-base">This is <strong>bold text</strong> and this is <em>italic text</em>.  </p>
-<ul>
+<ul className="text-base list-disc pl-12 space-y-2 py-2">
 <li>ul item 1</li>
 <li>ul Item 2</li>
 <li>ul Item 3</li>
 </ul>
-<ol>
+<ol className="text-base list-decimal pl-12 space-y-2 py-2">
 <li>ol item 1</li>
 <li>ol item 2</li>
 <li>ol item 3</li>
 </ol>
-<p className="py-2 text-base">paragrafasparagrafas paragrafas paragrafasparagrafas paragrafas paragrafas paragrafasparagrafas paragrafas paragrafas paragrafasparagrafas paragrafas paragrafas paragrafasparagrafas paragrafas</p>
-<p className="py-2 text-base">informacija<ScrollLink to=reference-1 smooth=true duration=500 offset=-100 className="cursor-pointer">[1]</ScrollLink></p>
-<p className="py-2 text-base">informuotas as esu pagal vardeni pavardeni et al<ScrollLink to=reference-2 smooth=true duration=500 offset=-100 className="cursor-pointer">[2]</ScrollLink></p>
+<p className="py-2 text-base">iGEM represents the pinnacle of synthetic biology education, fostering incredible innovation among students worldwide. The competition's collaborative spirit, interdisciplinary approach, and emphasis on real-world problem-solving creates an unparalleled learning environment. <ScrollLink to={"reference-1"} smooth={true} duration={500} offset={-20} className="cursor-pointer text-blue-500 hover:underline">[1]</ScrollLink> Watching teams transform ambitious ideas into tangible solutions that address global challenges demonstrates the extraordinary potential of young scientists working together.</p>
+<p className="py-2 text-base">tikrai taip butent taip as esu informuotas as esu pagal vardeni pavardeni et al <ScrollLink to={"reference-2"} smooth={true} duration={500} offset={-20} className="cursor-pointer text-blue-500 hover:underline">[2]</ScrollLink></p>
 <p className="py-2 text-base">info info <a className="text-blue-500 hover:underline cursor-pointer" href="https://2024.igem.wiki/vilnius-lithuania/engineering/">linkas</a> info info   </p>
 <h2 className="text-4xl font-bold mb-4" id="heading 1">References </h2>
-<ol>
+<ol className="text-base list-decimal pl-12 space-y-2 py-2">
 <li id="reference-1">jonas petrauskas et al</li>
 <li id="reference-2">vardas pavardenis et a</li>
 </ol>

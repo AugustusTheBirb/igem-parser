@@ -1,28 +1,28 @@
-# **Headeris**
+# **Heading vienas**
 
-Paragrafas, informacija informacija informacija 
+## Subheader vienas
 
-## Subheader
+Paragrafas su svarbia informacija **Paragrafas su svarbia informacija** Paragrafas su svarbia informacija *Paragrafas su svarbia informacija* Paragrafas \[1\] su svarbia informacija Paragrafas su svarbia informacija Paragrafas su svarbia informacija
 
-This is **bold text** and this is *italic text*.  
+* Pirmas itemas  
+* Antras itemas
 
-- ul item 1
-- ul Item 2
-- ul Item 3
+- Trecias itemas \[2\]  
+- Ketvirtas  
+- Penktas itemas  
+    
+1. Pirmas   
+2. antras
 
-1. ol item 1
-2. ol item 2
-3. ol item 3
+img([https://static.igem.wiki/teams/5780/ihp/adelie-penguin.webp](https://static.igem.wiki/teams/5780/ihp/adelie-penguin.webp))  
+Labai grazus pingvinas
 
-iGEM represents the pinnacle of synthetic biology education, fostering incredible innovation among students worldwide. The competition's collaborative spirit, interdisciplinary approach, and emphasis on real-world problem-solving creates an unparalleled learning environment. [1] Watching teams transform ambitious ideas into tangible solutions that address global challenges demonstrates the extraordinary potential of young scientists working together.
+## Subheader du
 
-tikrai taip butent taip as esu informuotas as esu pagal vardeni pavardeni et al [2]
+Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai  
+Antras paragrafas su svarbesniais dalykais Antras paragrafas su svarbesniais dalykais  Antras paragrafas su svarbesniais dalykais  Antras paragrafas su svarbesniais dalykais  Antras paragrafas su svarbesniais dalykais  Antras paragrafas su svarbesniais dalykais 
 
-info info [linkas](https://2024.igem.wiki/vilnius-lithuania/engineering/) info info   
+# **References**
 
-
-
-# References 
-
-1. jonas petrauskas et al
-2. vardas pavardenis et al
+1. Vardenis pavardenis et al  
+2. Auksinis kardas et al

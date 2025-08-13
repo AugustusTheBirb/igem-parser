@@ -30,12 +30,19 @@ def parseBoldItalic(string):
 def parseReferences(string):
     newString = ""
     num = ""
+    skip = False
     isNumber = False
     for i, letter in enumerate(string):
-        if letter == "[":
-            isNumber = True
+        if skip: 
+            skip = False
             continue
-        if letter == "]":
+            
+        if string[i:i+2] == "\\[":
+            print("weow")
+            isNumber = True
+            skip = True
+            continue
+        if string[i:i+2] == "\\]":
             isNumber = False
             scroll_link = (
             '<ScrollLink '
@@ -50,7 +57,7 @@ def parseReferences(string):
             '</ScrollLink>'
             )
             newString += scroll_link
-            #newString+= f"<ScrollLink to=\"{"reference-" + num}\" smooth=\"{"true"}\" duration=\"{"500"}\" offset=\"{"-100"}\" className=\"cursor-pointer\">[{num}]</ScrollLink>"
+            skip = True
             continue
         if isNumber:
             num += letter
@@ -112,8 +119,26 @@ with open("output_jsx.txt", "w") as out:
         lines = f.readlines()
         ref = False
         refIdx = 1
+        imageCount = 0
+        skipNext = False
         for i, line in enumerate(lines):
             isOlItem, numberLength = isOrderedListItem(line)
+            
+            if skipNext: 
+                skipNext = False
+                continue
+
+            if line.startswith("img(") and line.strip().endswith(")"):
+                url = line[4:-2]  
+                caption = lines[i + 1].strip()
+                imageCount += 1
+                skipNext = True
+                jsx = f'<div className="my-4">\n'
+                jsx += f'  <img src="{url}" alt="{caption}" className="h-100 w-auto mx-auto" />\n'
+                jsx += f'  <p className="text-sm text-center mt-2"><b>Fig {imageCount}.</b> {caption}</p>\n'
+                jsx += f'</div>\n'
+                out.write(jsx)
+                continue
 
             if line == "\n" : continue
             # Headers

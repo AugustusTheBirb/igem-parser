@@ -1,29 +1,15 @@
-<h2 className="text-4xl font-bold mb-4" id="heading 0">Heading vienas</h2>
-<h3 className="text-2xl font-bold mb-4" id="subheading 0">Subheader vienas</h3>
-<p className="py-2 text-base">Paragrafas su svarbia informacija <strong>Paragrafas su svarbia informacija</strong> Paragrafas su svarbia informacija <em>Paragrafas su svarbia informacija</em> Paragrafas <ScrollLink to={"reference-1"} smooth={true} duration={500} offset={-20} className="cursor-pointer text-blue-500 hover:underline">[1]</ScrollLink> su svarbia informacija Paragrafas su svarbia informacija Paragrafas su svarbia informacija</p>
-<ul className="text-base list-disc pl-12 space-y-2 py-2">
-<li>Pirmas itemas  </li>
-<li>Antras itemas</li>
-</ul>
-<ul className="text-base list-disc pl-12 space-y-2 py-2">
-<li>Trecias itemas <ScrollLink to={"reference-2"} smooth={true} duration={500} offset={-20} className="cursor-pointer text-blue-500 hover:underline">[2]</ScrollLink>  </li>
-<li>Ketvirtas  </li>
-<li>Penktas itemas  </li>
-</ul>
-<p className="py-2 text-base">    </p>
-<ol className="text-base list-decimal pl-12 space-y-2 py-2">
-<li>Pirmas   </li>
-<li>antras</li>
-</ol>
-<div className="my-4">
-  <img src="[https://static.igem.wiki/teams/5780/ihp/adelie-penguin.webp](https://static.igem.wiki/teams/5780/ihp/adelie-penguin.webp)) " alt="Labai grazus pingvinas" className="h-100 w-auto mx-auto" />
-  <p className="text-sm text-center mt-2"><b>Fig 1.</b> Labai grazus pingvinas</p>
-</div>
-<h3 className="text-2xl font-bold mb-4" id="subheading 1">Subheader du</h3>
-<p className="py-2 text-base">Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai Labai labai svarbus dalykai  </p>
-<p className="py-2 text-base">Antras paragrafas su svarbesniais dalykais Antras paragrafas su svarbesniais dalykais  Antras paragrafas su svarbesniais dalykais  Antras paragrafas su svarbesniais dalykais  Antras paragrafas su svarbesniais dalykais  Antras paragrafas su svarbesniais dalykais </p>
-<h2 className="text-4xl font-bold mb-4" id="heading 1">References</h2>
-<ol className="text-base list-decimal pl-12 space-y-2 py-2">
-<li id="reference-1">Vardenis pavardenis et al  </li>
-<li id="reference-2">Auksinis kardas et a</li>
-</ol>
+<h2 className="text-4xl font-bold mb-4" id="heading 0">Plasmids</h2>
+<table className="min-w-full border-collapse border border-gray-300 my-4">
+<thead>
+<tr><th className="px-4 py-2 border border-gray-300 font-semibold bg-gray-50">Plasmid name</th><th className="px-4 py-2 border border-gray-300 font-semibold bg-gray-50">Characteristics</th><th className="px-4 py-2 border border-gray-300 font-semibold bg-gray-50">Purpose</th><th className="px-4 py-2 border border-gray-300 font-semibold bg-gray-50">Source</th></tr>
+</thead>
+<tbody>
+<tr><td className="px-4 py-2 border border-gray-300">pMIIS793</td><td className="px-4 py-2 border border-gray-300"></td><td className="px-4 py-2 border border-gray-300">Expression of TaTasR with N-terminal Twin-StrepII-Sumo tag, PCR template for TaTasR gene amplification</td><td className="px-4 py-2 border border-gray-300">Zhang Feng lab, MIT</td></tr>
+<tr><td className="px-4 py-2 border border-gray-300">pMIIS794</td><td className="px-4 py-2 border border-gray-300"></td><td className="px-4 py-2 border border-gray-300">Expression of TaTasR TIGRNAs</td><td className="px-4 py-2 border border-gray-300">Zhang Feng lab, MIT</td></tr>
+<tr><td className="px-4 py-2 border border-gray-300">Sap1-J04450</td><td className="px-4 py-2 border border-gray-300"></td><td className="px-4 py-2 border border-gray-300">Backbone for Lvl0 construct assembly</td><td className="px-4 py-2 border border-gray-300">iGEM 2025 Distribution Kit</td></tr>
+<tr><td className="px-4 py-2 border border-gray-300">pET-28b(+)</td><td className="px-4 py-2 border border-gray-300">ori ColE1, lacI, T7 promoter, KanR</td><td className="px-4 py-2 border border-gray-300">Backbone for Lvl1 construct assembly</td><td className="px-4 py-2 border border-gray-300">VU LSC Institute of Biochemistry</td></tr>
+<tr><td className="px-4 py-2 border border-gray-300">pJUMP29-1C(sfGFP)</td><td className="px-4 py-2 border border-gray-300">ori pBBR322, sfGFP selection marker, KanR</td><td className="px-4 py-2 border border-gray-300">Backbone for Lvl1 construct assembly</td><td className="px-4 py-2 border border-gray-300">iGEM 2025 Distribution Kit</td></tr>
+<tr><td className="px-4 py-2 border border-gray-300">pAll\_Targets</td><td className="px-4 py-2 border border-gray-300">ori ColE1, AmpR</td><td className="px-4 py-2 border border-gray-300">Template for RPA reactions containing RecA, EF-Tu and rpsM genes for primer testing</td><td className="px-4 py-2 border border-gray-300">Twist Bioscience</td></tr>
+</tbody>
+</table>
+<h2 className="text-4xl font-bold mb-4" id="heading 1">Site Dirrected Mutagenesis primer</h2>

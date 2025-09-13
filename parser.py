@@ -83,7 +83,7 @@ def parseLinks(string):
             continue
         if linkR and letter == ")":
             linkR = False
-            newString += f"<a className=\"text-blue-500 hover:underline cursor-pointer\" href=\"{linkRoute}\">{linkText}</a>"
+            newString += f'<a className="text-blue-500 hover:underline cursor-pointer" href="{linkRoute}">{linkText}</a>'
             continue
         if linkR:
             linkRoute += letter
@@ -92,8 +92,6 @@ def parseLinks(string):
         if not linkR and not linkT:
             newString += letter
     return parseBoldItalic(parseReferences(newString))
-
-
 
 def isOrderedListItem(string):
     idx = 0
@@ -109,13 +107,28 @@ def isOrderedListItem(string):
     if breakFlag: return False, 0
     else: return True, idx
 
+def isTableRow(string):
+    return "|" in string.strip()
+
+def parseTableRow(string, isHeader=False):
+    cells = [cell.strip() for cell in string.split("|")[1:-1]]  # Remove empty first/last elements
+    tag = "th" if isHeader else "td"
+    className = "px-4 py-2 border border-gray-300 font-semibold bg-gray-50" if isHeader else "px-4 py-2 border border-gray-300"
+    
+    row_content = ""
+    for cell in cells:
+        row_content += f'<{tag} className="{className}">{parseLinks(cell)}</{tag}>'
+    
+    return f'<tr>{row_content}</tr>'
 
 with open("output_jsx.txt", "w") as out:
     with open("input_file.md") as f:
+        table_body_started = False
         headerIndex = 0
         subheaderIndex = 0
         ul = False
         ol = False
+        table = False
         lines = f.readlines()
         ref = False
         refIdx = 1
@@ -123,6 +136,7 @@ with open("output_jsx.txt", "w") as out:
         skipNext = False
         for i, line in enumerate(lines):
             isOlItem, numberLength = isOrderedListItem(line)
+            isTable = isTableRow(line)
             
             if skipNext: 
                 skipNext = False
@@ -146,40 +160,71 @@ with open("output_jsx.txt", "w") as out:
                 if line[0:2] == "# ":
                     if "References" in line:
                         ref = True
-                    out.write(f"<h2 className=\"text-4xl font-bold mb-4\" id=\"heading {headerIndex}\">{line[2:-1].replace("*","")}</h2>\n")
+                    out.write(f'<h2 className="text-4xl font-bold mb-4" id="heading {headerIndex}">{line[2:-1].replace("*","")}</h2>\n')
                     headerIndex += 1
                 elif line[0:3] == "## ":
-                    out.write(f"<h3 className=\"text-2xl font-bold mb-4\" id=\"subheading {subheaderIndex}\">{line[3:-1].replace("*","")}</h3>\n")
+                    out.write(f'<h3 className="text-2xl font-bold mb-4" id="subheading {subheaderIndex}">{line[3:-1].replace("*","")}</h3>\n')
                     subheaderIndex += 1
+            # Table handling
+            elif isTable and not table:
+                # Start of table - write header
+                table = True
+                out.write('<table className="text-base min-w-full border-collapse border border-gray-300 my-4">\n<thead className="text-center" >\n')
+                out.write(parseTableRow(line, isHeader=True) + '\n')
+            elif isTable and table:
+                # Check if this is the alignment row (contains :---- pattern)
+                if line.strip().startswith('|') and ':' in line and '-' in line:
+                    # Skip alignment row
+                    continue
+                else:
+                    # This is a data row
+                    if i > 0 and not table_body_started:
+                        out.write('</thead>\n<tbody>\n')
+                        table_body_started = True
+                    elif 'table_body_started' not in locals():
+                        table_body_started = False
+                        
+                    if table_body_started or (i > 0 and lines[i-1].strip().startswith('|') and ':' in lines[i-1] and '-' in lines[i-1]):
+                        if not table_body_started:
+                            out.write('</thead>\n<tbody>\n')
+                            table_body_started = True
+                        out.write(parseTableRow(line) + '\n')
+                    
+                    # Check if table ends
+                    if i+1 == len(lines) or not isTableRow(lines[i+1]):
+                        out.write('</tbody>\n</table>\n')
+                        table = False
+                        if 'table_body_started' in locals():
+                            del table_body_started
             # ul and ol
             # ul
             elif line[0] in "-*" and not ul:
                 ul = True
-                out.write("<ul className=\"text-base list-disc pl-12 space-y-2 py-2\">\n")
-                out.write(f"<li>{parseLinks(line[2:-1])}</li>\n")
+                out.write('<ul className="text-base list-disc pl-12 space-y-2 py-2">\n')
+                out.write(f'<li>{parseLinks(line[2:-1])}</li>\n')
             elif line[0] in "-*" and ul:
-                out.write(f"<li>{parseLinks(line[2:-1])}</li>\n")
+                out.write(f'<li>{parseLinks(line[2:-1])}</li>\n')
                 if i+1 == len(lines) or lines[i+1][0] not in "-*":
                     out.write("</ul>\n")
                     ul = False
             # ol
             elif line[0:2] == "1." and not ol:
                 ol = True
-                out.write("<ol className=\"text-base list-decimal pl-12 space-y-2 py-2\">\n")
+                out.write('<ol className="text-base list-decimal pl-12 space-y-2 py-2">\n')
                 addition = ""
                 if ref: 
-                    addition = f" id=\"reference-{refIdx}\""
+                    addition = f' id="reference-{refIdx}"'
                     refIdx += 1
-                out.write(f"<li{addition}>{parseLinks(line[numberLength+2:-1])}</li>\n")
+                out.write(f'<li{addition}>{parseLinks(line[numberLength+2:-1])}</li>\n')
             elif isOlItem and ol:
                 addition = ""
                 if ref: 
-                    addition = f" id=\"reference-{refIdx}\""
+                    addition = f' id="reference-{refIdx}"'
                     refIdx += 1
-                out.write(f"<li{addition}>{parseLinks(line[numberLength+2:-1])}</li>\n")
+                out.write(f'<li{addition}>{parseLinks(line[numberLength+2:-1])}</li>\n')
                 if i+1 != len(lines): isOlItem, _ = isOrderedListItem(lines[i+1])
                 if i+1 == len(lines) or not isOlItem:
                     out.write("</ol>\n")
                     ol = False
             else:
-                out.write(f"<p className=\"py-2 text-base\">{parseLinks(line[:-1])}</p>\n")
+                out.write(f'<p className="py-2 text-base">{parseLinks(line[:-1])}</p>\n')

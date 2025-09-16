@@ -169,6 +169,7 @@ with open("output_jsx.txt", "w") as out:
             elif isTable and not table:
                 # Start of table - write header
                 table = True
+                out.write('<div style=\{\{  overflowX: "auto", webkitOverflowScrolling: "touch",\}\}>\n')
                 out.write('<table className="text-base min-w-full border-collapse border border-gray-300 my-4">\n<thead className="text-center" >\n')
                 out.write(parseTableRow(line, isHeader=True) + '\n')
             elif isTable and table:
@@ -192,7 +193,7 @@ with open("output_jsx.txt", "w") as out:
                     
                     # Check if table ends
                     if i+1 == len(lines) or not isTableRow(lines[i+1]):
-                        out.write('</tbody>\n</table>\n')
+                        out.write('</tbody>\n</table>\n</div>\n')
                         table = False
                         if 'table_body_started' in locals():
                             del table_body_started

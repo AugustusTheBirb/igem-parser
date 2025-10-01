@@ -12,18 +12,18 @@ def parseBoldItalic(string):
         if string[index:index+2] == "**" and not bold:
             bold=True
             skip=True
-            newString += "<strong>"
+            newString += "<Strong>"
         elif string[index:index+2] == "**" and bold:
             bold = False
             skip=True
-            newString +="</strong>"
-        elif string[index] == "*" and not italic: 
+            newString +="</Strong>"
+        elif string[index] == "*" and not italic:
             italic=True
-            newString += "<em>"
+            newString += "<Em>"
         elif string[index] == "*" and italic:
             italic = False
-            newString +="</em>"
-        if string[index] != "*":
+            newString +="</Em>"
+        else:
             newString += string[index]
     return newString        
 
@@ -38,7 +38,6 @@ def parseReferences(string):
             continue
             
         if string[i:i+2] == "\\[":
-            print("weow")
             isNumber = True
             skip = True
             continue
@@ -57,6 +56,7 @@ def parseReferences(string):
             '</ScrollLink>'
             )
             newString += scroll_link
+            num = ""
             skip = True
             continue
         if isNumber:
@@ -65,8 +65,22 @@ def parseReferences(string):
             newString += letter
     return newString
 
+def unescapeString(string):
+    """Remove escape characters for special characters"""
+    result = ""
+    skip = False
+    for i in range(len(string)):
+        if skip:
+            skip = False
+            continue
+        if string[i] == "\\" and i + 1 < len(string) and string[i+1] in "._":
+            # Skip the backslash but the next iteration will add the character
+            continue
+        result += string[i]
+    return result
+
 def parseLinks(string):
-    newString = "" 
+    newString = ""
     linkT = False
     linkR = False
     linkText = ""
@@ -83,7 +97,7 @@ def parseLinks(string):
             continue
         if linkR and letter == ")":
             linkR = False
-            newString += f'<a className="text-blue-500 hover:underline cursor-pointer" href="{linkRoute}">{linkText}</a>'
+            newString += f'<Link href="{linkRoute}">{linkText}</Link>'
             continue
         if linkR:
             linkRoute += letter
@@ -91,7 +105,7 @@ def parseLinks(string):
             linkText += letter
         if not linkR and not linkT:
             newString += letter
-    return parseBoldItalic(parseReferences(newString))
+    return parseBoldItalic(parseReferences(unescapeString(newString)))
 
 def isOrderedListItem(string):
     idx = 0
@@ -99,7 +113,7 @@ def isOrderedListItem(string):
     while idx < 1000:
         if string[idx] in "1234567890":
             idx += 1
-        elif line[idx] == ".":
+        elif string[idx] == "." and (idx == 0 or string[idx-1] != "\\"):
             break
         else:
             breakFlag = True
@@ -112,16 +126,16 @@ def isTableRow(string):
 
 def parseTableRow(string, isHeader=False):
     cells = [cell.strip() for cell in string.split("|")[1:-1]]  # Remove empty first/last elements
-    tag = "th" if isHeader else "td"
-    className = "px-4 py-2 border border-gray-300 font-semibold bg-gray-50" if isHeader else "px-4 py-2 border border-gray-300"
-    
+    tag = "TH" if isHeader else "TD"
+
     row_content = ""
     for cell in cells:
-        row_content += f'<{tag} className="{className}">{parseLinks(cell)}</{tag}>'
-    
-    return f'<tr>{row_content}</tr>'
+        row_content += f'<{tag}>{parseLinks(cell)}</{tag}>'
+
+    return f'<TR>{row_content}</TR>'
 
 with open("output_jsx.txt", "w") as out:
+    # Write imports at the top
     with open("input_file.md") as f:
         table_body_started = False
         headerIndex = 0
@@ -143,14 +157,11 @@ with open("output_jsx.txt", "w") as out:
                 continue
 
             if line.startswith("img(") and line.strip().endswith(")"):
-                url = line[4:-2]  
+                url = line[4:-2]
                 caption = lines[i + 1].strip()
                 imageCount += 1
                 skipNext = True
-                jsx = f'<div className="my-4">\n'
-                jsx += f'  <img src="{url}" alt="{caption}" className="h-100 w-auto mx-auto" />\n'
-                jsx += f'  <p className="text-sm text-center mt-2"><b>Fig {imageCount}.</b> {caption}</p>\n'
-                jsx += f'</div>\n'
+                jsx = f'<Figure src="{url}" alt="{caption}" caption="{caption}" figNumber={imageCount} />\n'
                 out.write(jsx)
                 continue
 
@@ -160,17 +171,20 @@ with open("output_jsx.txt", "w") as out:
                 if line[0:2] == "# ":
                     if "References" in line:
                         ref = True
-                    out.write(f'<h2 className="text-4xl font-bold mb-4" id="heading {headerIndex}">{line[2:-1].replace("*","")}</h2>\n')
+                    content = line[2:].rstrip('\n').replace("*","")
+                    out.write(f'<H2 id="heading {headerIndex}">{content}</H2>\n')
                     headerIndex += 1
                 elif line[0:3] == "## ":
-                    out.write(f'<h3 className="text-2xl font-bold mb-4" id="subheading {subheaderIndex}">{line[3:-1].replace("*","")}</h3>\n')
+                    content = line[3:].rstrip('\n').replace("*","")
+                    out.write(f'<H3 id="subheading {subheaderIndex}">{content}</H3>\n')
                     subheaderIndex += 1
             # Table handling
             elif isTable and not table:
                 # Start of table - write header
                 table = True
-                out.write('<div style=\{\{  overflowX: "auto", webkitOverflowScrolling: "touch",\}\}>\n')
-                out.write('<table className="text-base min-w-full border-collapse border border-gray-300 my-4">\n<thead className="text-center" >\n')
+                table_body_started = False
+                out.write('<TableWrapper>\n')
+                out.write('<Table>\n<THead>\n')
                 out.write(parseTableRow(line, isHeader=True) + '\n')
             elif isTable and table:
                 # Check if this is the alignment row (contains :---- pattern)
@@ -180,52 +194,57 @@ with open("output_jsx.txt", "w") as out:
                 else:
                     # This is a data row
                     if i > 0 and not table_body_started:
-                        out.write('</thead>\n<tbody>\n')
+                        out.write('</THead>\n<TBody>\n')
                         table_body_started = True
                     elif 'table_body_started' not in locals():
                         table_body_started = False
-                        
+
                     if table_body_started or (i > 0 and lines[i-1].strip().startswith('|') and ':' in lines[i-1] and '-' in lines[i-1]):
                         if not table_body_started:
-                            out.write('</thead>\n<tbody>\n')
+                            out.write('</THead>\n<TBody>\n')
                             table_body_started = True
                         out.write(parseTableRow(line) + '\n')
-                    
+
                     # Check if table ends
                     if i+1 == len(lines) or not isTableRow(lines[i+1]):
-                        out.write('</tbody>\n</table>\n</div>\n')
+                        out.write('</TBody>\n</Table>\n</TableWrapper>\n')
                         table = False
                         if 'table_body_started' in locals():
                             del table_body_started
             # ul and ol
             # ul
-            elif line[0] in "-*" and not ul:
+            elif line[0:2] in ["- ", "* "] and not ul:
                 ul = True
-                out.write('<ul className="text-base list-disc pl-12 space-y-2 py-2">\n')
-                out.write(f'<li>{parseLinks(line[2:-1])}</li>\n')
-            elif line[0] in "-*" and ul:
-                out.write(f'<li>{parseLinks(line[2:-1])}</li>\n')
-                if i+1 == len(lines) or lines[i+1][0] not in "-*":
-                    out.write("</ul>\n")
+                out.write('<UL>\n')
+                content = line[2:].rstrip('\n')
+                out.write(f'<LI>{parseLinks(content)}</LI>\n')
+            elif line[0:2] in ["- ", "* "] and ul:
+                content = line[2:].rstrip('\n')
+                out.write(f'<LI>{parseLinks(content)}</LI>\n')
+                if i+1 == len(lines) or lines[i+1][0:2] not in ["- ", "* "]:
+                    out.write("</UL>\n")
                     ul = False
             # ol
-            elif line[0:2] == "1." and not ol:
+            elif isOlItem and not ol:
                 ol = True
-                out.write('<ol className="text-base list-decimal pl-12 space-y-2 py-2">\n')
+                out.write('<OL>\n')
                 addition = ""
-                if ref: 
+                if ref:
                     addition = f' id="reference-{refIdx}"'
                     refIdx += 1
-                out.write(f'<li{addition}>{parseLinks(line[numberLength+2:-1])}</li>\n')
+                content = line[numberLength+2:].rstrip('\n')
+                out.write(f'<LI{addition}>{parseLinks(content)}</LI>\n')
             elif isOlItem and ol:
                 addition = ""
-                if ref: 
+                if ref:
                     addition = f' id="reference-{refIdx}"'
                     refIdx += 1
-                out.write(f'<li{addition}>{parseLinks(line[numberLength+2:-1])}</li>\n')
+                content = line[numberLength+2:].rstrip('\n')
+                out.write(f'<LI{addition}>{parseLinks(content)}</LI>\n')
                 if i+1 != len(lines): isOlItem, _ = isOrderedListItem(lines[i+1])
                 if i+1 == len(lines) or not isOlItem:
-                    out.write("</ol>\n")
+                    out.write("</OL>\n")
                     ol = False
             else:
-                out.write(f'<p className="py-2 text-base">{parseLinks(line[:-1])}</p>\n')
+                content = line.rstrip('\n')
+                out.write(f'<P>{parseLinks(content)}</P>\n')

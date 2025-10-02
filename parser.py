@@ -134,9 +134,9 @@ def parseTableRow(string, isHeader=False):
 
     return f'<TR>{row_content}</TR>'
 
-with open("output_jsx.txt", "w") as out:
+with open("output_jsx.txt", "w", encoding="utf-8") as out:
     # Write imports at the top
-    with open("input_file.md") as f:
+    with open("input_file.md", encoding="utf-8") as f:
         table_body_started = False
         headerIndex = 0
         subheaderIndex = 0

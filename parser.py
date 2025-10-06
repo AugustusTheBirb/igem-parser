@@ -190,6 +190,42 @@ def isOrderedListItem(string):
     if breakFlag: return False, 0
     else: return True, idx
 
+def isFigureDescription(string):
+    """Check if line starts with a figure description like '**Fig. 1\.**'"""
+    stripped = string.strip()
+
+    # Check for bold formatting
+    if stripped.startswith("**Fig."):
+        prefix = "**Fig."
+        idx = 6  # Start after "**Fig."
+    elif stripped.startswith("Fig."):
+        prefix = "Fig."
+        idx = 4  # Start after "Fig."
+    else:
+        return False, 0
+
+    # Skip spaces
+    while idx < len(stripped) and stripped[idx] == " ":
+        idx += 1
+
+    num_start = idx
+    while idx < len(stripped) and stripped[idx] in "0123456789":
+        idx += 1
+
+    # Check for escaped period (\.) or regular period (.)
+    if idx > num_start and idx < len(stripped):
+        if stripped[idx:idx+3] == "\\.**":  # Escaped period with bold
+            fig_num = stripped[num_start:idx]
+            return True, fig_num
+        elif stripped[idx:idx+2] == "\\.":  # Escaped period
+            fig_num = stripped[num_start:idx]
+            return True, fig_num
+        elif stripped[idx] == ".":  # Regular period
+            fig_num = stripped[num_start:idx]
+            return True, fig_num
+
+    return False, 0
+
 def isTableRow(string):
     return "|" in string.strip()
 
@@ -220,10 +256,14 @@ with open("output_jsx.txt", "w", encoding="utf-8") as out:
         ieeeRef = False
         ieeeRefContent = ""
         ieeeRefNum = ""
+        figureRef = False
+        figureContent = ""
+        figureNum = ""
         for i, line in enumerate(lines):
             isOlItem, numberLength = isOrderedListItem(line)
             isTable = isTableRow(line)
             isIEEE, ieeeNum = isIEEEReference(line)
+            isFig, figNum = isFigureDescription(line)
 
             if skipNext:
                 skipNext = False
@@ -236,6 +276,60 @@ with open("output_jsx.txt", "w", encoding="utf-8") as out:
                 skipNext = True
                 jsx = f'<Figure src="{url}" alt="{caption}" caption="{caption}" figNumber={imageCount} />\n'
                 out.write(jsx)
+                continue
+
+            # Handle figure descriptions (Fig. 1. ...)
+            if isFig and not figureRef:
+                # Start of a new figure description
+                figureRef = True
+                figureNum = figNum
+                # Remove the "**Fig. X\.**" or "Fig. X." prefix and store the content
+                stripped = line.strip()
+                # Try different prefix patterns
+                patterns = [
+                    f"**Fig. {figNum}\\.**",
+                    f"**Fig. {figNum}.**",
+                    f"**Fig. {figNum}\\.",
+                    f"Fig. {figNum}\\.",
+                    f"Fig. {figNum}."
+                ]
+                for pattern in patterns:
+                    if pattern in stripped:
+                        idx = stripped.find(pattern) + len(pattern)
+                        figureContent = stripped[idx:].strip()
+                        break
+                continue
+            elif figureRef and not isFig and line.strip() != "":
+                # Continuation of figure description
+                figureContent += " " + line.strip()
+                continue
+            elif figureRef and (line.strip() == "" or isFig):
+                # End of figure description (blank line or start of new figure)
+                # Parse the figure content for bold/italic/links
+                parsed_content = parseLinks(figureContent)
+                jsx = f'<Figure src="" alt="{parsed_content}" caption="{parsed_content}" figNumber={{{figureNum}}} />\n'
+                out.write(jsx)
+                figureRef = False
+                figureContent = ""
+                figureNum = ""
+
+                # If this is a new figure, handle it
+                if isFig:
+                    figureRef = True
+                    figureNum = figNum
+                    stripped = line.strip()
+                    patterns = [
+                        f"**Fig. {figNum}\\.**",
+                        f"**Fig. {figNum}.**",
+                        f"**Fig. {figNum}\\.",
+                        f"Fig. {figNum}\\.",
+                        f"Fig. {figNum}."
+                    ]
+                    for pattern in patterns:
+                        if pattern in stripped:
+                            idx = stripped.find(pattern) + len(pattern)
+                            figureContent = stripped[idx:].strip()
+                            break
                 continue
 
             # Handle IEEE-style references
@@ -354,6 +448,12 @@ with open("output_jsx.txt", "w", encoding="utf-8") as out:
             else:
                 content = line.rstrip('\n')
                 out.write(f'<P>{parseLinks(content)}</P>\n')
+
+        # Handle any remaining figure description at end of file
+        if figureRef and figureContent:
+            parsed_content = parseLinks(figureContent)
+            jsx = f'<Figure src="" alt="{parsed_content}" caption="{parsed_content}" figNumber={{{figureNum}}} />\n'
+            out.write(jsx)
 
         # Handle any remaining IEEE reference at end of file
         if ieeeRef and ieeeRefContent:

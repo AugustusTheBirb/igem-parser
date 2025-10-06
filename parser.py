@@ -33,40 +33,78 @@ def parseReferences(string):
     skip = False
     isNumber = False
     for i, letter in enumerate(string):
-        if skip: 
+        if skip:
             skip = False
             continue
-            
+
         if string[i:i+2] == "\\[":
-            isNumber = True
-            skip = True
-            continue
+            # Peek ahead to see if this is a numeric reference
+            j = i + 2
+            temp_num = ""
+            while j < len(string) and string[j] in "0123456789":
+                temp_num += string[j]
+                j += 1
+            # Only treat as reference if it's followed by \] and contains digits
+            if j < len(string) and string[j:j+2] == "\\]" and temp_num:
+                isNumber = True
+                skip = True
+                continue
+            else:
+                # Not a numeric reference, treat as escaped bracket
+                skip = True
+                newString += "["
+                continue
         if string[i:i+2] == "\\]":
-            isNumber = False
-            scroll_link = (
-            '<ScrollLink '
-            'to={"reference-'
-            f'{num}'
-            '"} '
-            'smooth={true} '
-            'duration={500} '
-            'offset={-20} '
-            'className="cursor-pointer text-blue-500 hover:underline">'
-            f'[{num}]'
-            '</ScrollLink>'
-            )
-            newString += scroll_link
-            num = ""
-            skip = True
-            continue
+            if isNumber:
+                isNumber = False
+                scroll_link = (
+                '<ScrollLink '
+                'to={"reference-'
+                f'{num}'
+                '"} '
+                'smooth={true} '
+                'duration={500} '
+                'offset={-20} '
+                'className="cursor-pointer text-blue-500 hover:underline">'
+                f'[{num}]'
+                '</ScrollLink>'
+                )
+                newString += scroll_link
+                num = ""
+                skip = True
+                continue
+            else:
+                # Escaped closing bracket, not part of a reference
+                skip = True
+                newString += "]"
+                continue
         if isNumber:
             num += letter
         if not isNumber:
             newString += letter
     return newString
 
+def isIEEEReference(string):
+    """Check if line starts with IEEE-style reference like \[1\]"""
+    stripped = string.strip()
+    if not stripped.startswith("\\["):
+        return False, 0
+
+    # Find the closing \]
+    idx = 2  # Start after \[
+    while idx < len(stripped) and stripped[idx] in "0123456789":
+        idx += 1
+
+    if idx < len(stripped) and stripped[idx:idx+2] == "\\]":
+        # Extract reference number
+        ref_num = stripped[2:idx]
+        # Return True and the reference number
+        return True, ref_num
+
+    return False, 0
+
 def unescapeString(string):
-    """Remove escape characters for special characters"""
+    """Remove escape characters for special characters (except brackets, which are handled by parseReferences)"""
     result = ""
     skip = False
     for i in range(len(string)):
@@ -105,7 +143,38 @@ def parseLinks(string):
             linkText += letter
         if not linkR and not linkT:
             newString += letter
-    return parseBoldItalic(parseReferences(unescapeString(newString)))
+    return parseBoldItalic(unescapeString(parseReferences(newString)))
+
+def parseIEEEReference(string):
+    """Parse IEEE reference content without converting numeric references to ScrollLinks"""
+    newString = ""
+    linkT = False
+    linkR = False
+    linkText = ""
+    linkRoute = ""
+    for i, letter in enumerate(string):
+        if letter == "[" and i + 1 < len(string) and string[i+1] not in "1234567890":
+            linkT = True
+            continue
+        if letter == "]" and linkT:
+            linkT = False
+            linkR = True
+            continue
+        if linkR and letter == "(":
+            continue
+        if linkR and letter == ")":
+            linkR = False
+            newString += f'<Link href="{linkRoute}">{linkText}</Link>'
+            linkRoute = ""
+            linkText = ""
+            continue
+        if linkR:
+            linkRoute += letter
+        if linkT:
+            linkText += letter
+        if not linkR and not linkT:
+            newString += letter
+    return parseBoldItalic(unescapeString(newString))
 
 def isOrderedListItem(string):
     idx = 0
@@ -148,11 +217,15 @@ with open("output_jsx.txt", "w", encoding="utf-8") as out:
         refIdx = 1
         imageCount = 0
         skipNext = False
+        ieeeRef = False
+        ieeeRefContent = ""
+        ieeeRefNum = ""
         for i, line in enumerate(lines):
             isOlItem, numberLength = isOrderedListItem(line)
             isTable = isTableRow(line)
-            
-            if skipNext: 
+            isIEEE, ieeeNum = isIEEEReference(line)
+
+            if skipNext:
                 skipNext = False
                 continue
 
@@ -163,6 +236,39 @@ with open("output_jsx.txt", "w", encoding="utf-8") as out:
                 skipNext = True
                 jsx = f'<Figure src="{url}" alt="{caption}" caption="{caption}" figNumber={imageCount} />\n'
                 out.write(jsx)
+                continue
+
+            # Handle IEEE-style references
+            if isIEEE and not ieeeRef:
+                # Start of a new IEEE reference
+                ieeeRef = True
+                ieeeRefNum = ieeeNum
+                # Remove the \[num\] prefix and store the content
+                stripped = line.strip()
+                idx = stripped.find("\\]") + 2
+                ieeeRefContent = stripped[idx:].strip()
+                continue
+            elif ieeeRef and not isIEEE and line.strip() != "":
+                # Continuation of IEEE reference
+                ieeeRefContent += " " + line.strip()
+                continue
+            elif ieeeRef and (line.strip() == "" or isIEEE):
+                # End of IEEE reference (blank line or start of new reference)
+                if not ol:
+                    out.write('<OL>\n')
+                    ol = True
+                out.write(f'<LI id="reference-{ieeeRefNum}">{parseIEEEReference(ieeeRefContent)}</LI>\n')
+                ieeeRef = False
+                ieeeRefContent = ""
+                ieeeRefNum = ""
+
+                # If this is a new IEEE reference, handle it
+                if isIEEE:
+                    ieeeRef = True
+                    ieeeRefNum = ieeeNum
+                    stripped = line.strip()
+                    idx = stripped.find("\\]") + 2
+                    ieeeRefContent = stripped[idx:].strip()
                 continue
 
             if line == "\n" : continue
@@ -248,3 +354,14 @@ with open("output_jsx.txt", "w", encoding="utf-8") as out:
             else:
                 content = line.rstrip('\n')
                 out.write(f'<P>{parseLinks(content)}</P>\n')
+
+        # Handle any remaining IEEE reference at end of file
+        if ieeeRef and ieeeRefContent:
+            if not ol:
+                out.write('<OL>\n')
+                ol = True
+            out.write(f'<LI id="reference-{ieeeRefNum}">{parseIEEEReference(ieeeRefContent)}</LI>\n')
+
+        # Close any open OL tag
+        if ol:
+            out.write("</OL>\n")
